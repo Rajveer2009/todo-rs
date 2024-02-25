@@ -1,4 +1,4 @@
-# Simple Todo App
+# Simple TODO App
 
 This is a simple command-line todo application written in Rust using the ZED editor.
 
