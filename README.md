@@ -21,8 +21,7 @@ To use the application, follow these steps:
 
 1. Clone the repository.
 2. Navigate to the project directory.
-3. Set the path for the todo list file in the `main.rs` file:
-   `const FILE_NAME: &str = "<path_to_your_todo_list_file>";`
+3. Define `TODO_PATH` as the file path for `todo.td`.
 
 ### Command
 

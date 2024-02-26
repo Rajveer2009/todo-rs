@@ -1,10 +1,7 @@
-use chrono::offset::Local;
-use chrono::{DateTime, Utc};
 use std::env;
 use std::error::Error;
 use std::fs::{write, File, OpenOptions};
 use std::io::{BufRead, BufReader, BufWriter, Write};
-use std::time::SystemTime;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
