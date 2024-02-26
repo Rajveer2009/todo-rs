@@ -1,6 +1,6 @@
 # todo-rs
 
-This is a simple command-line todo application written in Rust using the [ZED editor](https://zed.dev/).
+This is a simple command-line todo application written in Rust using the [ZED editor](https://github.com/zed-industries/zed).
 
 ![Example Image](example.png)
 
