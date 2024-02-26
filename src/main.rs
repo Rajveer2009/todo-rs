@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         _ => Err(Box::new(std::io::Error::new(
             std::io::ErrorKind::InvalidInput,
-            "Invalid command: use 'add', 'listS', 'listC','remove', 'mark', 'reset'",
+            "Invalid command: use 'add', 'list', 'listC','remove', 'mark', 'reset'",
         ))),
     }
 }
