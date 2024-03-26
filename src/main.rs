@@ -1,23 +1,33 @@
 use std::env;
+use ansi_term::Style;
 use std::error::Error;
+use std::process::exit;
 use std::fs::{write, File, OpenOptions};
 use std::io::{BufRead, BufReader, BufWriter, Write};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
+    if args.len() < 2 {
+        println!("Usage: [command] *");
+        exit(0x0101)
+    } 
+
+    let bold = Style::new().bold();
+    println!("{}", bold.paint("TODO"));
+
     let command = &args[1];
 
-    let file_name = env::var("TODO_PATH").expect("not found!");
+    let todo_path = env::var("TODO_PATH").expect("Environment variable 'TODO_PATH' not found!");
 
     match command.as_str() {
-        "mark" => mark(args[2].parse::<usize>().unwrap(), &file_name),
-        "listC" => listC(&file_name),
-        "list" => listS(&file_name),
-        "reset" => reset(&file_name),
-        "remove" => remove(args[2].parse::<usize>().unwrap(), &file_name),
+        "mark" => mark_task(args[2].parse::<usize>().unwrap(), &todo_path),
+        "listC" => list_complex(&todo_path),
+        "list" => list_simple(&todo_path),
+        "reset" => reset_todo_file(&todo_path),
+        "remove" => remove_task(args[2].parse::<usize>().unwrap(), &todo_path),
         "add" => {
             let tasks: Vec<String> = args[2..].to_vec();
-            add(&tasks, &file_name)?;
+            add_tasks(&tasks, &todo_path)?;
             Ok(())
         }
         _ => Err(Box::new(std::io::Error::new(
@@ -27,13 +37,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn add(tasks: &[String], file_name: &str) -> Result<(), Box<dyn Error>> {
+fn add_tasks(tasks: &[String], todo_path: &str) -> Result<(), Box<dyn Error>> {
     let timestamp = chrono::offset::Local::now();
     let formatted_time = timestamp.format("%d/%m/%Y %H:%M:%S");
 
     let mut data_file = OpenOptions::new()
         .append(true)
-        .open(file_name)
+        .open(todo_path)
         .expect("Failed to open file for writing");
 
     for task in tasks {
@@ -44,10 +54,8 @@ fn add(tasks: &[String], file_name: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn listC(file_name: &str) -> Result<(), Box<dyn Error>> {
-    println!("TODO");
-
-    let file = File::open(file_name)?;
+fn list_complex(todo_path: &str) -> Result<(), Box<dyn Error>> {
+    let file = File::open(todo_path)?;
     let reader = BufReader::new(file);
 
     let mut line_number = 1;
@@ -61,31 +69,29 @@ fn listC(file_name: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn listS(file_name: &str) -> Result<(), Box<dyn Error>> {
-    println!("TODO");
-
-    let file = File::open(file_name)?;
+fn list_simple(todo_path: &str) -> Result<(), Box<dyn Error>> {
+    let file = File::open(todo_path)?;
     let reader = BufReader::new(file);
 
     for line in reader.lines() {
         let line = line?;
-        println!("{}", chop(line));
+        println!("{}", truncate(line));
     }
 
     Ok(())
 }
 
-fn reset(file_name: &str) -> Result<(), Box<dyn Error>> {
-    write(file_name, "")?;
+fn reset_todo_file(todo_path: &str) -> Result<(), Box<dyn Error>> {
+    write(todo_path, "")?;
     Ok(())
 }
 
-fn remove(line_number: usize, file_name: &str) -> Result<(), Box<dyn Error>> {
+fn remove_task(line_number: usize, todo_path: &str) -> Result<(), Box<dyn Error>> {
     let mut lines = Vec::new();
     let mut line_count = 0;
 
     {
-        let file = File::open(file_name)?;
+        let file = File::open(todo_path)?;
         let reader = BufReader::new(file);
 
         for line in reader.lines() {
@@ -100,7 +106,7 @@ fn remove(line_number: usize, file_name: &str) -> Result<(), Box<dyn Error>> {
     let file = OpenOptions::new()
         .write(true)
         .truncate(true)
-        .open(file_name)?;
+        .open(todo_path)?;
 
     let mut writer = BufWriter::new(file);
 
@@ -111,11 +117,11 @@ fn remove(line_number: usize, file_name: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn mark(line_number: usize, file_name: &str) -> Result<(), Box<dyn Error>> {
+fn mark_task(line_number: usize, todo_path: &str) -> Result<(), Box<dyn Error>> {
     let mut lines = Vec::new();
     let mut line_count = 0;
 
-    let file = File::open(file_name)?;
+    let file = File::open(todo_path)?;
     let reader = BufReader::new(file);
 
     for line in reader.lines() {
@@ -137,7 +143,7 @@ fn mark(line_number: usize, file_name: &str) -> Result<(), Box<dyn Error>> {
     let file = OpenOptions::new()
         .write(true)
         .truncate(true)
-        .open(file_name)?;
+        .open(todo_path)?;
 
     let mut writer = BufWriter::new(file);
 
@@ -148,7 +154,7 @@ fn mark(line_number: usize, file_name: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn chop(mut line: String) -> String {
+fn truncate(mut line: String) -> String {
     if line.len() > 20 {
         line = line.chars().skip(20).collect();
     } else {
